@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Suivi Contrats – Sécurité Humaine</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+  <div class="brand">Suivi Contrats – Sécurité Humaine</div>
+  <nav>
+    <button class="tab-btn" data-tab="tab-contrats">Contrats</button>
+    <button class="tab-btn" data-tab="tab-clauses">Clauses</button>
+    <button class="tab-btn" data-tab="tab-sla">SLA / KPI</button>
+    <button class="tab-btn" data-tab="tab-penalites">Pénalités</button>
+    <button class="tab-btn" data-tab="tab-indicateurs">Indicateurs</button>
+    <button class="tab-btn" data-tab="tab-import">Import/Export</button>
+    <button class="tab-btn" data-tab="tab-aide">Aide</button>
+  </nav>
+</header>
+
+<main>
+  <!-- CONTRATS -->
+  <section id="tab-contrats" class="tab active">
+    <div class="toolbar">
+      <button id="add-contrat">+ Nouveau contrat</button>
+      <input type="text" id="search-contrat" placeholder="Rechercher (client, n° contrat, site)">
+      <label><input type="checkbox" id="filter-alert"> Alerte J-90</label>
+    </div>
+    <table id="table-contrats">
+      <thead>
+        <tr>
+          <th>N°</th><th>Client</th><th>Sites</th><th>Type</th>
+          <th>Tarif mensuel (MAD)</th><th>Début</th><th>Fin</th>
+          <th>Préavis (j)</th><th>J-90</th><th>Jours restants</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- CLAUSES -->
+  <section id="tab-clauses" class="tab">
+    <div class="toolbar">
+      <button id="add-clause">+ Ajouter clause</button>
+      <select id="filter-clause-contrat"></select>
+      <input type="text" id="search-clause" placeholder="Rechercher (catégorie, code, intitulé)…">
+    </div>
+    <table id="table-clauses">
+      <thead>
+        <tr>
+          <th>Contrat</th><th>Catégorie</th><th>Code</th><th>Intitulé/Variante</th><th>Statut</th><th>Priorité</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- SLA / KPI -->
+  <section id="tab-sla" class="tab">
+    <div class="toolbar">
+      <button id="add-sla">+ Ajouter SLA/KPI</button>
+      <select id="filter-sla-contrat"></select>
+    </div>
+    <table id="table-sla">
+      <thead>
+        <tr>
+          <th>Contrat</th><th>KPI</th><th>Cible</th><th>Résultat</th><th>Unité</th><th>Fenêtre</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- PENALITES -->
+  <section id="tab-penalites" class="tab">
+    <div class="toolbar">
+      <button id="add-penalite">+ Nouvelle pénalité</button>
+      <button id="gen-penalite">Générer pénalités (auto)</button>
+      <select id="filter-penalite-contrat"></select>
+    </div>
+    <div class="panel hint">
+      <p><strong>Moteur de pénalités intégré</strong> — Types pris en charge :</p>
+      <ul>
+        <li><em>Montant fixe</em></li>
+        <li><em>% du tarif mensuel</em></li>
+        <li><em>Par unité</em> (ex. par tranche de 30 min de dépassement)</li>
+        <li><em>Graduée</em> (paliers de % ou montants)</li>
+      </ul>
+      <p>Paramétrez un <strong>déclencheur</strong> (KPI en dessous de la cible, délai de remplacement, manquement spécifique) et un <strong>plafond</strong> (en MAD ou % du tarif mensuel).</p>
+    </div>
+    <table id="table-penalites">
+      <thead>
+        <tr>
+          <th>Contrat</th><th>Règle</th><th>Déclencheur</th><th>Base</th><th>Paramètres</th><th>Plafond</th><th>Pénalité estimée (mois)</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- INDICATEURS -->
+  <section id="tab-indicateurs" class="tab">
+    <div class="cards">
+      <div class="card"><div class="kpi" id="kpi-contrats">0</div><div class="kpi-label">Contrats actifs</div></div>
+      <div class="card"><div class="kpi" id="kpi-ca">0</div><div class="kpi-label">CA mensuel (MAD)</div></div>
+      <div class="card"><div class="kpi" id="kpi-penalites">0</div><div class="kpi-label">Pénalités estimées (MAD)</div></div>
+    </div>
+    <div class="panel">
+      <h3>Répartition des pénalités par contrat</h3>
+      <canvas id="chart-penalites" width="640" height="320" aria-label="Chart pénalités"></canvas>
+    </div>
+  </section>
+
+  <!-- IMPORT / EXPORT -->
+  <section id="tab-import" class="tab">
+    <div class="panel">
+      <h3>Export</h3>
+      <div class="row">
+        <label>Contrat <select id="export-contract"></select></label>
+        <button id="export-doc">Exporter DOC (fiche contrat)</button>
+        <button id="export-pdf">Exporter PDF (fiche contrat)</button>
+      </div>
+      <button id="export-json">Exporter JSON (toutes données)</button>
+      <button id="export-csv-contrats">Exporter CSV (contrats)</button>
+    </div>
+    <div class="panel">
+      <h3>Import</h3>
+      <input type="file" id="import-file" accept=".json">
+      <button id="import-btn">Importer JSON</button>
+      <p class="hint">⚠️ Astuce : exportez au préalable en JSON, modifiez puis réimportez.</p>
+    </div>
+    <div class="panel">
+      <h3>Sauvegarde locale</h3>
+      <button id="save-local">Sauvegarder dans ce navigateur</button>
+      <button id="load-local">Charger depuis ce navigateur</button>
+      <button id="reset-app">Réinitialiser</button>
+    </div>
+  </section>
+
+  <!-- AIDE -->
+  <section id="tab-aide" class="tab">
+    <div class="panel">
+      <h3>Publier sur GitHub Pages</h3>
+      <ol>
+        <li>Créer un dépôt (ex: <code>suivi-contrats-securite</code>).</li>
+        <li>Uploader les fichiers du ZIP (index.html, styles.css, app.js, README_GitHub_Pages.txt).</li>
+        <li>Settings → Pages → <em>Deploy from a branch</em>, Branch <strong>main</strong>, Folder <strong>/ (root)</strong>.</li>
+      </ol>
+      <p>Données stockées dans <strong>localStorage</strong> (aucun serveur). Import/Export JSON intégrés.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <small>© Artemis Security — modèle statique. Données locales uniquement.</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
